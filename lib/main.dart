@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'theme/app_theme.dart';
-import 'features/home/home_preview_screen.dart';
-import 'features/job/job_assignment_preview_screen.dart';
+import 'features/login/login_preview_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +29,7 @@ void main() async {
         title: 'WasteCollect Preview',
         debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.dark,
-        home: JobAssignmentPreviewScreen(),
+        home: LoginPreviewScreen(),
       ),
     ),
   );

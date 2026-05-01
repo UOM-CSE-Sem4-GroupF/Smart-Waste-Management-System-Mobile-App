@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
+import '../job/job_assignment_preview_screen.dart';
+import '../login/login_preview_screen.dart';
+import 'preview_shell.dart';
 
 class HomePreviewScreen extends StatelessWidget {
   const HomePreviewScreen({super.key});
@@ -9,38 +13,53 @@ class HomePreviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Padding(
+      body: const HomePreviewBody(),
+    );
+  }
+}
+
+class HomePreviewBody extends ConsumerWidget {
+  const HomePreviewBody({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const JobAssignmentPreviewScreen()),
+                );
+              },
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: _buildNoJobCard(context),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: _buildStatsCard(context),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: _buildStatsCard(context),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: _buildMapPreviewCard(context),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  _buildHistoryButton(context, ref),
+                  const SizedBox(height: 40),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: _buildMapPreviewCard(context),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
-                    _buildHistoryButton(context),
-                    const SizedBox(height: 40),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -55,15 +74,23 @@ class HomePreviewScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.accentTeal, width: 2),
-                      image: const DecorationImage(
-                        image: NetworkImage('https://i.pravatar.cc/150?u=1024'),
-                        fit: BoxFit.cover,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPreviewScreen()),
+                        (route) => false,
+                      );
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.accentTeal, width: 2),
+                        image: const DecorationImage(
+                          image: NetworkImage('https://i.pravatar.cc/150?u=1024'),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
@@ -284,11 +311,13 @@ class HomePreviewScreen extends StatelessWidget {
     ).animate().fadeIn(delay: 600.ms);
   }
 
-  Widget _buildHistoryButton(BuildContext context) {
+  Widget _buildHistoryButton(BuildContext context, WidgetRef ref) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          ref.read(previewIndexProvider.notifier).state = 2; // Index for History
+        },
         icon: const Icon(Icons.history_rounded, color: AppColors.textSecondary),
         label: const Text('View job history', style: TextStyle(color: Colors.white)),
         style: ElevatedButton.styleFrom(
@@ -299,26 +328,6 @@ class HomePreviewScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: 0,
-        backgroundColor: AppColors.bgPrimary,
-        selectedItemColor: AppColors.accentBlue,
-        unselectedItemColor: AppColors.textMuted,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'HOME'),
-          BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map), label: 'MAP'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'HISTORY'),
-        ],
       ),
     );
   }

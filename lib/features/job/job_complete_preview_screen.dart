@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
+import '../home/preview_shell.dart';
 
-class JobCompletePreviewScreen extends StatelessWidget {
+class JobCompletePreviewScreen extends ConsumerWidget {
   const JobCompletePreviewScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F1117),
       appBar: AppBar(
@@ -24,11 +26,11 @@ class JobCompletePreviewScreen extends StatelessWidget {
         actions: [
           const Icon(Icons.wifi, color: AppColors.accentBlue),
           const SizedBox(width: 16),
-          Padding(
+          const Padding(
             padding: const EdgeInsets.only(right: 16),
             child: CircleAvatar(
               radius: 16,
-              backgroundImage: const NetworkImage('https://i.pravatar.cc/150?u=1024'),
+              backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=1024'),
             ),
           ),
         ],
@@ -152,7 +154,9 @@ class JobCompletePreviewScreen extends StatelessWidget {
               
               // Buttons
               OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  ref.read(previewIndexProvider.notifier).state = 1; // Map index
+                },
                 icon: const Icon(Icons.map_outlined),
                 label: const Text('VIEW ON MAP'),
                 style: OutlinedButton.styleFrom(
@@ -165,7 +169,7 @@ class JobCompletePreviewScreen extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  ref.read(previewIndexProvider.notifier).state = 0; // Home index
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 56),

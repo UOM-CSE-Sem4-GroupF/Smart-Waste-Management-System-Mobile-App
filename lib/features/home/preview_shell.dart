@@ -1,38 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
+import '../job/job_complete_preview_screen.dart';
 import 'home_preview_screen.dart';
 
-class PreviewShell extends StatefulWidget {
+final previewIndexProvider = StateProvider<int>((ref) => 0);
+
+class PreviewShell extends ConsumerWidget {
   const PreviewShell({super.key});
 
-  @override
-  State<PreviewShell> createState() => _PreviewShellState();
-}
-
-class _PreviewShellState extends State<PreviewShell> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = [
-    const HomePreviewBody(),
-    const MapPreviewBody(),
-    const HistoryPreviewBody(),
+  final List<Widget> _pages = const [
+    HomePreviewBody(),
+    MapPreviewBody(),
+    HistoryPreviewBody(),
+    JobCompletePreviewScreen(),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(previewIndexProvider);
+
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: _pages[_currentIndex],
+      body: _pages[currentIndex],
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
+          currentIndex: currentIndex,
           onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
+            ref.read(previewIndexProvider.notifier).state = index;
           },
           backgroundColor: AppColors.bgPrimary,
           selectedItemColor: AppColors.accentBlue,
@@ -43,6 +41,7 @@ class _PreviewShellState extends State<PreviewShell> {
             BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'HOME'),
             BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map), label: 'MAP'),
             BottomNavigationBarItem(icon: Icon(Icons.history), label: 'HISTORY'),
+            BottomNavigationBarItem(icon: Icon(Icons.check_circle_outline), activeIcon: Icon(Icons.check_circle), label: 'COMPLETED'),
           ],
         ),
       ),

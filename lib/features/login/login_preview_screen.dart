@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../theme/app_theme.dart';
-import '../home/home_preview_screen.dart';
+import '../home/preview_shell.dart';
 
 class LoginPreviewScreen extends StatefulWidget {
   const LoginPreviewScreen({super.key});
@@ -31,7 +31,7 @@ class _LoginPreviewScreenState extends State<LoginPreviewScreen>
 
   void _onLogin() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomePreviewScreen()),
+      MaterialPageRoute(builder: (_) => const PreviewShell()),
     );
   }
 
