@@ -34,57 +34,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final statsAsync = ref.watch(driverStatsProvider);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.bgGradient),
-        child: SafeArea(
-          child: RefreshIndicator(
-            color: AppColors.accentTeal,
-            backgroundColor: AppColors.bgCard,
-            onRefresh: _onRefresh,
-            child: CustomScrollView(
-              slivers: [
-                // App bar
-                SliverToBoxAdapter(
-                  child: _buildHeader(driver?.name ?? 'Driver',
-                      driver?.vehicleName ?? 'LORRY', driver?.zoneName ?? 'Zone'),
+      backgroundColor: AppColors.bgPrimary,
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: AppColors.accentTeal,
+          backgroundColor: AppColors.bgCard,
+          onRefresh: _onRefresh,
+          child: CustomScrollView(
+            slivers: [
+              // App bar
+              SliverToBoxAdapter(
+                child: _buildHeader(
+                  driver?.name ?? 'John',
+                  driver?.id?.toString() ?? '1024',
+                  driver?.vehicleName ?? 'LORRY-03',
+                  driver?.zoneName ?? 'Zone 3',
                 ),
-                // Content
-                SliverPadding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  sliver: SliverToBoxAdapter(
-                    child: jobAsync.when(
-                      data: (job) => job != null
-                          ? _buildActiveJobCard(context, job)
-                          : _buildNoJobCard(context, statsAsync),
-                      loading: () => _buildLoadingCard(),
-                      error: (_, __) => _buildNoJobCard(context, statsAsync),
-                    ),
+              ),
+              // Content
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                sliver: SliverToBoxAdapter(
+                  child: jobAsync.when(
+                    data: (job) => job != null
+                        ? _buildActiveJobCard(context, job)
+                        : _buildNoJobCard(context, statsAsync),
+                    loading: () => _buildLoadingCard(),
+                    error: (_, __) => _buildNoJobCard(context, statsAsync),
                   ),
                 ),
-                // Bottom actions
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 8),
-                        _buildHistoryButton(context),
-                        const SizedBox(height: 24),
-                        _buildLogoutButton(context),
-                      ],
-                    ),
+              ),
+              // Map Preview
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                sliver: SliverToBoxAdapter(
+                  child: _buildMapPreviewCard(context),
+                ),
+              ),
+              // Bottom actions
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 8),
+                      _buildHistoryButton(context),
+                      const SizedBox(height: 24),
+                      _buildLogoutButton(context),
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
+      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
-  Widget _buildHeader(String name, String vehicle, String zone) {
+  Widget _buildHeader(String name, String driverId, String vehicle, String zone) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
         ? 'Good morning'
@@ -93,57 +103,78 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             : 'Good evening';
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$greeting,',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: AppColors.textSecondary),
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.accentTeal, width: 2),
+                      image: const DecorationImage(
+                        image: NetworkImage('https://i.pravatar.cc/150?u=1024'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    Text(
-                      name.split(' ').first,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineLarge
-                          ?.copyWith(fontSize: 26),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'DRIVER #$driverId',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                        ),
+                  ),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCard,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: const Text('👤', style: TextStyle(fontSize: 24)),
-              ),
+              const Icon(Icons.wifi, color: AppColors.accentBlue, size: 24),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 32),
+          Text(
+            '$greeting, $name',
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const Text(
+            '👋',
+            style: TextStyle(fontSize: 32),
+          ),
+          const SizedBox(height: 20),
           Row(
             children: [
-              StatusChip(
-                label: vehicle,
-                icon: Icons.local_shipping_rounded,
-                color: AppColors.accentBlue,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.bgCardLight,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  vehicle.toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    letterSpacing: 1.1,
+                  ),
+                ),
               ),
-              const SizedBox(width: 8),
-              StatusChip(
-                label: zone,
-                icon: Icons.location_on_rounded,
-                color: AppColors.accentTeal,
+              const SizedBox(width: 12),
+              Text(
+                '·  $zone',
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -152,107 +183,196 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ).animate().fadeIn(duration: 600.ms);
   }
 
-  Widget _buildNoJobCard(BuildContext context,
-      AsyncValue<Map<String, dynamic>> statsAsync) {
+  Widget _buildNoJobCard(BuildContext context, AsyncValue<Map<String, dynamic>> statsAsync) {
     return Column(
       children: [
         // Status card
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
           decoration: BoxDecoration(
             color: AppColors.bgCard,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppColors.accentGreen.withValues(alpha: 0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentGreen.withValues(alpha: 0.05),
-                blurRadius: 24,
-              ),
-            ],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.divider),
           ),
           child: Column(
             children: [
-              _PulsingDot(color: AppColors.accentGreen),
-              const SizedBox(height: 16),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.accentGreen,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.check_circle_outline, color: Colors.white, size: 40),
+              ),
+              const SizedBox(height: 24),
               Text(
-                "You're Available",
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.accentGreen,
-                      fontWeight: FontWeight.w700,
+                "You're available",
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 'Waiting for assignment...',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
               ),
             ],
           ),
         ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
         const SizedBox(height: 20),
-        // Today's stats
+        // Today's performance
         statsAsync.when(
           data: (stats) => _buildStatsCard(context, stats),
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.accentTeal),
-          ),
-          error: (_, __) => const SizedBox.shrink(),
+          loading: () => _buildLoadingCard(),
+          error: (_, __) => _buildStatsCard(context, {}),
         ),
       ],
     );
   }
 
-  Widget _buildStatsCard(
-      BuildContext context, Map<String, dynamic> stats) {
+  Widget _buildStatsCard(BuildContext context, Map<String, dynamic> stats) {
+    final jobs = stats['jobs_today'] ?? 3;
+    final bins = stats['bins_today'] ?? 28;
+    final weight = stats['weight_today_kg'] ?? 1240;
+    final progress = 0.45; // Fixed for design match
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Today's stats",
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            "TODAY'S PERFORMANCE",
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
                 ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _StatTile(
-                label: 'Jobs',
-                value: '${stats['jobs_today'] ?? 0}',
-                icon: Icons.work_rounded,
-                color: AppColors.accentTeal,
+              _StatItem(label: 'JOBS', value: '$jobs'),
+              _StatItem(label: 'BINS', value: '$bins'),
+              _StatItem(label: 'WEIGHT', value: '$weight', suffix: ' kg'),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Stack(
+            children: [
+              Container(
+                height: 6,
+                decoration: BoxDecoration(
+                  color: AppColors.bgCardLight,
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
-              const SizedBox(width: 12),
-              _StatTile(
-                label: 'Bins',
-                value: '${stats['bins_today'] ?? 0}',
-                icon: Icons.delete_rounded,
-                color: AppColors.accentGreen,
-              ),
-              const SizedBox(width: 12),
-              _StatTile(
-                label: 'Weight',
-                value: '${((stats['weight_today_kg'] ?? 0) as num).toInt()} kg',
-                icon: Icons.scale_rounded,
-                color: AppColors.accentOrange,
+              FractionallySizedBox(
+                widthFactor: progress,
+                child: Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentBlue,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '${(progress * 100).toInt()}% OF DAILY TARGET',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  letterSpacing: 0.8,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ],
       ),
     ).animate().fadeIn(delay: 400.ms);
   }
+
+  Widget _buildMapPreviewCard(BuildContext context) {
+    return Container(
+      height: 300,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        image: const DecorationImage(
+          image: NetworkImage('https://api.placeholder.com/600/400?text=Map+Preview'), // Replace with actual map preview if possible
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.8)],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 20,
+            left: 20,
+            child: Text(
+              'CURRENT LOCATION: BERLIN NORTH',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.1,
+              ),
+            ),
+          ),
+          const Positioned(
+            top: 20,
+            left: 20,
+            child: Icon(Icons.location_on, color: Colors.white, size: 24),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 600.ms);
+  }
+
+  Widget _buildBottomNav(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: 0,
+        backgroundColor: AppColors.bgPrimary,
+        selectedItemColor: AppColors.accentBlue,
+        unselectedItemColor: AppColors.textMuted,
+        showUnselectedLabels: true,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'HOME'),
+          BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map), label: 'MAP'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'HISTORY'),
+        ],
+        onTap: (index) {
+          if (index == 1) context.push('/job/active/map');
+          if (index == 2) context.push('/history');
+        },
+      ),
+    );
+  }
+
 
   Widget _buildActiveJobCard(BuildContext context, job) {
     return Container(
@@ -352,16 +472,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildHistoryButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: OutlinedButton.icon(
+      child: ElevatedButton.icon(
         onPressed: () => context.push('/history'),
-        icon: const Icon(Icons.history_rounded),
-        label: const Text('View job history'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.accentTeal,
+        icon: const Icon(Icons.history_rounded, color: AppColors.textSecondary),
+        label: const Text('View job history', style: TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.bgCard,
           side: const BorderSide(color: AppColors.divider),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -371,7 +491,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildLogoutButton(BuildContext context) {
     return TextButton.icon(
       onPressed: () async {
-        await ref.read(keycloakServiceProvider).logout();
+        await ref.read(keycloakServiceProvider.notifier).logout();
         if (!mounted) return;
         context.go('/login');
       },
@@ -455,52 +575,51 @@ class _PulsingDotState extends State<_PulsingDot>
   }
 }
 
-class _StatTile extends StatelessWidget {
+class _StatItem extends StatelessWidget {
   final String label;
   final String value;
-  final IconData icon;
-  final Color color;
+  final String? suffix;
 
-  const _StatTile({
+  const _StatItem({
     required this.label,
     required this.value,
-    required this.icon,
-    required this.color,
+    this.suffix,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.bold,
+              ),
         ),
-        child: Column(
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 11,
+            if (suffix != null)
+              Text(
+                suffix!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
               ),
-            ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

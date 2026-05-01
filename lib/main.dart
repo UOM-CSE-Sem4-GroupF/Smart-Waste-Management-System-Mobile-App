@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'app.dart';
+import 'theme/app_theme.dart';
+import 'features/home/home_preview_screen.dart';
+import 'features/job/job_assignment_preview_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +26,12 @@ void main() async {
 
   runApp(
     const ProviderScope(
-      child: WasteCollectApp(),
+      child: MaterialApp(
+        title: 'WasteCollect Preview',
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.dark,
+        home: JobAssignmentPreviewScreen(),
+      ),
     ),
   );
 }
