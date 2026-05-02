@@ -4,24 +4,24 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   AppColors._();
 
-  static const bgPrimary = Color(0xFF0F1117);
-  static const bgCard = Color(0xFF1A1D2E);
-  static const bgCardLight = Color(0xFF222640);
-  static const accentTeal = Color(0xFF00D4AA);
-  static const accentTealDark = Color(0xFF00A888);
-  static const accentGreen = Color(0xFF22C55E);
-  static const accentRed = Color(0xFFEF4444);
-  static const accentOrange = Color(0xFFF97316);
-  static const accentYellow = Color(0xFFEAB308);
-  static const accentBlue = Color(0xFF3B82F6);
+  static const bgPrimary = Color(0xFF111111);
+  static const bgCard = Color(0xFF161616);
+  static const bgCardLight = Color(0xFF181818);
+  static const accentTeal = Color(0xFF00E5FF);
+  static const accentTealDark = Color(0xFF00B3CC);
+  static const accentGreen = Color(0xFF00FF66);
+  static const accentRed = Color(0xFFFF3333);
+  static const accentOrange = Color(0xFFFF9900);
+  static const accentYellow = Color(0xFFFFCC00);
+  static const accentBlue = Color(0xFF33CCFF);
   static const textPrimary = Color(0xFFFFFFFF);
-  static const textSecondary = Color(0xFF94A3B8);
-  static const textMuted = Color(0xFF4B5563);
-  static const divider = Color(0xFF2D3148);
-  static const success = Color(0xFF22C55E);
-  static const warning = Color(0xFFF97316);
-  static const error = Color(0xFFEF4444);
-  static const info = Color(0xFF3B82F6);
+  static const textSecondary = Color(0xFFAAAAAA);
+  static const textMuted = Color(0xFF7A7A7A);
+  static const divider = Color(0xFF2A2A2A);
+  static const success = Color(0xFF00FF66);
+  static const warning = Color(0xFFFF9900);
+  static const error = Color(0xFFFF3333);
+  static const info = Color(0xFF33CCFF);
 
   static const tealGradient = LinearGradient(
     colors: [accentTeal, accentTealDark],
@@ -30,19 +30,19 @@ class AppColors {
   );
 
   static const greenGradient = LinearGradient(
-    colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+    colors: [accentGreen, Color(0xFF00CC55)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const redGradient = LinearGradient(
-    colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+    colors: [accentRed, Color(0xFFCC2222)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const bgGradient = LinearGradient(
-    colors: [Color(0xFF0F1117), Color(0xFF0D1520)],
+    colors: [bgPrimary, bgCard],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
@@ -53,7 +53,8 @@ class AppTheme {
 
   static ThemeData get dark {
     final base = ThemeData.dark(useMaterial3: true);
-    final textTheme = GoogleFonts.interTextTheme(base.textTheme);
+    // Using an industrial font approach
+    final textTheme = GoogleFonts.rajdhaniTextTheme(base.textTheme);
 
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.bgPrimary,
@@ -111,18 +112,18 @@ class AppTheme {
           letterSpacing: 0.5,
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: AppColors.bgCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.divider, width: 1),
+          borderRadius: BorderRadius.zero,
+          side: BorderSide(color: AppColors.divider, width: 1.5),
         ),
-        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 0),
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.divider,
-        thickness: 1,
+        thickness: 1.5,
         space: 0,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -143,23 +144,23 @@ class AppTheme {
           fontSize: 18,
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
+      inputDecorationTheme: const InputDecorationTheme(
         filled: true,
         fillColor: AppColors.bgCardLight,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.divider),
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppColors.divider, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.divider),
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppColors.divider, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.accentTeal, width: 2),
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppColors.accentTeal, width: 2),
         ),
-        hintStyle: const TextStyle(color: AppColors.textMuted),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        hintStyle: TextStyle(color: AppColors.textMuted),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -167,56 +168,63 @@ class AppTheme {
           foregroundColor: Colors.black,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
           ),
           textStyle: const TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 15,
-            letterSpacing: 0.3,
+            letterSpacing: 1.0,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.accentTeal,
-          side: const BorderSide(color: AppColors.accentTeal, width: 1.5),
+          foregroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: AppColors.divider, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
           ),
           textStyle: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 15,
+            letterSpacing: 1.0,
           ),
         ),
       ),
-      chipTheme: ChipThemeData(
+      chipTheme: const ChipThemeData(
         backgroundColor: AppColors.bgCardLight,
-        selectedColor: AppColors.accentTeal.withValues(alpha: 0.2),
-        labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        selectedColor: AppColors.accentTeal,
+        labelStyle: TextStyle(color: AppColors.textSecondary, fontSize: 13),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.divider),
+          borderRadius: BorderRadius.zero,
+          side: BorderSide(color: AppColors.divider, width: 1.5),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
-      snackBarTheme: SnackBarThemeData(
+      snackBarTheme: const SnackBarThemeData(
         backgroundColor: AppColors.bgCard,
-        contentTextStyle: const TextStyle(color: AppColors.textPrimary),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        contentTextStyle: TextStyle(color: AppColors.textPrimary),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+          side: BorderSide(color: AppColors.divider, width: 1.5),
+        ),
         behavior: SnackBarBehavior.floating,
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.bgCard,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.zero,
         ),
         elevation: 0,
       ),
-      dialogTheme: DialogThemeData(
+      dialogTheme: const DialogThemeData(
         backgroundColor: AppColors.bgCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+          side: BorderSide(color: AppColors.divider, width: 1.5),
+        ),
         elevation: 0,
       ),
     );
