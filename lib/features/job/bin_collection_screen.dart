@@ -116,6 +116,7 @@ class _BinCollectionScreenState extends ConsumerState<BinCollectionScreen> {
 
     final reason = await showModalBottomSheet<String>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => const _SkipReasonSheet(),
     );
 
@@ -690,47 +691,49 @@ class _SkipReasonSheetState extends State<_SkipReasonSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-      decoration: const BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.divider,
-                borderRadius: BorderRadius.circular(2),
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        decoration: const BoxDecoration(
+          color: AppColors.bgCard,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Text('Reason for skip',
-              style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          ...reasons.map(
-            (r) => _ReasonTile(
-              label: r,
-              selected: _selected == r,
-              onTap: () => setState(() => _selected = r),
+            const SizedBox(height: 20),
+            Text('Reason for skip',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            ...reasons.map(
+              (r) => _ReasonTile(
+                label: r,
+                selected: _selected == r,
+                onTap: () => setState(() => _selected = r),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _selected == null
-                  ? null
-                  : () => Navigator.pop(context, _selected),
-              child: const Text('Confirm skip'),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _selected == null
+                    ? null
+                    : () => Navigator.pop(context, _selected),
+                child: const Text('Confirm skip'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
