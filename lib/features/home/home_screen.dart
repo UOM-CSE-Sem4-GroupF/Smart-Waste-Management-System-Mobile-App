@@ -371,7 +371,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildLogoutButton(BuildContext context) {
     return TextButton.icon(
       onPressed: () async {
-        await ref.read(keycloakServiceProvider).logout();
+        await ref.read(keycloakServiceProvider.notifier).logout();
         if (!mounted) return;
         context.go('/login');
       },
