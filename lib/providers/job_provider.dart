@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/api/api_client.dart';
 import '../core/api/api_endpoints.dart';
@@ -12,6 +13,65 @@ class JobNotifier extends AsyncNotifier<Job?> {
   }
 
   Future<Job?> _fetchActiveJob() async {
+    if (kIsWeb) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return Job.fromJson({
+        'id': 'job-001',
+        'type': 'ROUTINE',
+        'zone_id': '1',
+        'zone_name': 'Colombo 01',
+        'state': 'IN_PROGRESS',
+        'assigned_driver_id': 'dev-123',
+        'vehicle_id': 'WP-LC-1234',
+        'stops': [
+          {
+            'cluster_id': 'stop-1',
+            'cluster_name': 'Stop 1: Main Street',
+            'lat': 6.9312,
+            'lng': 79.8450,
+            'status': 'CURRENT',
+            'bins': [
+              {
+                'id': 'bin-1',
+                'type': 'ORGANIC',
+                'fill_level': 0.8,
+                'status': 'PENDING'
+              }
+            ]
+          },
+          {
+            'cluster_id': 'stop-2',
+            'cluster_name': 'Stop 2: Galle Face',
+            'lat': 6.9271,
+            'lng': 79.8462,
+            'status': 'PENDING',
+            'bins': [
+              {
+                'id': 'bin-2',
+                'type': 'PLASTIC',
+                'fill_level': 0.6,
+                'status': 'PENDING'
+              }
+            ]
+          }
+        ],
+        'waypoints': [
+          {'lat': 6.9312, 'lng': 79.8450},
+          {'lat': 6.9271, 'lng': 79.8462}
+        ],
+        'estimated_minutes': 45,
+        'estimated_distance_km': 1.5,
+        'estimated_weight_kg': 150.0,
+        'cargo_limit_kg': 5000.0,
+        'bins_collected': 0,
+        'bins_skipped': 0,
+        'bins_total': 2,
+        'actual_weight_kg': 0.0,
+        'started_at': DateTime.now().toIso8601String(),
+        'assigned_at': DateTime.now().toIso8601String(),
+      });
+    }
+
     try {
       final dio = ref.read(dioProvider);
       final response = await dio.get(

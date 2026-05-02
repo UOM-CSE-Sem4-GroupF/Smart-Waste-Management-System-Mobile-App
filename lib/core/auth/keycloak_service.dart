@@ -94,6 +94,29 @@ class KeycloakService extends Notifier<AuthState> {
   /// PKCE login via browser.
   Future<void> login() async {
     state = state.copyWith(isLoading: true, error: null);
+
+    // MOCK LOGIN FOR WEB DEVELOPMENT
+    if (kIsWeb) {
+      await Future.delayed(const Duration(seconds: 1));
+      state = AuthState(
+        isLoggedIn: true,
+        driver: Driver(
+          id: 'dev-123',
+          keycloakId: 'dev-123',
+          name: 'Kamal Perera',
+          email: 'kamal@waste-mgmt.lk',
+          vehicleId: 'WP-LC-1234',
+          vehicleName: 'Compactor A',
+          vehicleCapacityKg: 5000.0,
+          zoneId: '1',
+          zoneName: 'Colombo 01',
+        ),
+        accessToken: 'mock_token',
+        isLoading: false,
+      );
+      return;
+    }
+
     try {
       final result = await _appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
@@ -114,7 +137,7 @@ class KeycloakService extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: 'Login failed. Please try again.',
+        error: 'Login failed: ${e.toString()}',
       );
     }
   }
