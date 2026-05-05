@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../models/bin_stop.dart';
 import '../../providers/job_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/status_chip.dart';
+
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -45,10 +48,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // App bar
               SliverToBoxAdapter(
                 child: _buildHeader(
-                  driver?.name ?? 'John',
-                  driver?.id?.toString() ?? '1024',
-                  driver?.vehicleName ?? 'LORRY-03',
-                  driver?.zoneName ?? 'Zone 3',
+                  driver != null ? driver.name : 'John',
+                  driver != null ? driver.id.toString() : '1024',
+                  driver != null ? driver.vehicleName : 'LORRY-03',
+                  driver != null ? driver.zoneName : 'Zone 3',
                 ),
               ),
               // Content
@@ -238,7 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final jobs = stats['jobs_today'] ?? 3;
     final bins = stats['bins_today'] ?? 28;
     final weight = stats['weight_today_kg'] ?? 1240;
-    final progress = 0.45; // Fixed for design match
+    const progress = 0.45; // Fixed for design match
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -305,48 +308,202 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildMapPreviewCard(BuildContext context) {
-    return Container(
-      height: 300,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        image: const DecorationImage(
-          image: NetworkImage('https://api.placeholder.com/600/400?text=Map+Preview'), // Replace with actual map preview if possible
-          fit: BoxFit.cover,
+    final jobAsync = ref.watch(jobProvider);
+    final job = jobAsync.valueOrNull;
+
+    // Demo markers for when no job is active (Colombo, Sri Lanka)
+    const fallbackCenter = LatLng(6.9271, 79.8612);
+    final demoMarkers = <Marker>[
+      _makePreviewMarker(const LatLng(6.9271, 79.8612), AppColors.accentTeal),
+      _makePreviewMarker(const LatLng(6.9310, 79.8650), AppColors.accentGreen),
+      _makePreviewMarker(const LatLng(6.9230, 79.8580), AppColors.textMuted),
+      _makePreviewMarker(const LatLng(6.9290, 79.8700), AppColors.textMuted),
+    ];
+
+    final center = job != null && job.stops.isNotEmpty
+        ? LatLng(job.stops.first.lat, job.stops.first.lng)
+        : fallbackCenter;
+
+    final markers = job != null
+        ? job.stops.map((s) {
+            Color color;
+            switch (s.status) {
+              case StopStatus.completed:
+                color = AppColors.accentGreen;
+                break;
+              case StopStatus.current:
+                color = AppColors.accentTeal;
+                break;
+              case StopStatus.pending:
+                color = AppColors.textMuted;
+                break;
+            }
+            return _makePreviewMarker(LatLng(s.lat, s.lng), color);
+          }).toList()
+        : demoMarkers;
+
+    final zoneLabel = job != null
+        ? job.zoneName.toUpperCase()
+        : 'NO ACTIVE JOB — STANDBY';
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox(
+        height: 300,
+        child: Stack(
+          children: [
+            // ── Live map ──────────────────────────────────────────────────
+            FlutterMap(
+              options: MapOptions(
+                initialCenter: center,
+                initialZoom: 14.5,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.all,
+                ),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName:
+                      'com.groupf.waste_collect_driver',
+                ),
+                MarkerLayer(markers: markers),
+              ],
+            ),
+            // ── Top badge ─────────────────────────────────────────────────
+            Positioned(
+              top: 12,
+              left: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.bgPrimary.withValues(alpha: 0.82),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color: AppColors.divider, width: 0.5),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.map_outlined,
+                        color: AppColors.accentTeal, size: 14),
+                    SizedBox(width: 5),
+                    Text(
+                      'LIVE MAP',
+                      style: TextStyle(
+                        color: AppColors.accentTeal,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // ── Bottom overlay ────────────────────────────────────────────
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 28, 16, 14),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      AppColors.bgPrimary.withValues(alpha: 0.92),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.location_on_rounded,
+                              color: AppColors.accentTeal, size: 14),
+                          const SizedBox(height: 2),
+                          Text(
+                            zoneLabel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.9,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => context.push('/job/active/map'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentTeal,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.open_in_full_rounded,
+                                color: Colors.black, size: 14),
+                            SizedBox(width: 5),
+                            Text(
+                              'OPEN MAP',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.8)],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: Text(
-              'CURRENT LOCATION: BERLIN NORTH',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.1,
-              ),
-            ),
-          ),
-          const Positioned(
-            top: 20,
-            left: 20,
-            child: Icon(Icons.location_on, color: Colors.white, size: 24),
-          ),
-        ],
-      ),
     ).animate().fadeIn(delay: 600.ms);
+  }
+
+  /// Tiny circular dot marker used in the home-screen preview card.
+  Marker _makePreviewMarker(LatLng point, Color color) {
+    return Marker(
+      point: point,
+      width: 18,
+      height: 18,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.55),
+              blurRadius: 6,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBottomNav(BuildContext context) {
@@ -493,6 +650,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       onPressed: () async {
         await ref.read(keycloakServiceProvider.notifier).logout();
         if (!mounted) return;
+        // ignore: use_build_context_synchronously
         context.go('/login');
       },
       icon: const Icon(Icons.logout_rounded,

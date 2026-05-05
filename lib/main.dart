@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'theme/app_theme.dart';
 import 'features/login/login_preview_screen.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
