@@ -51,6 +51,148 @@ class AppColors {
 class AppTheme {
   AppTheme._();
 
+  static ThemeData get light {
+    final base = ThemeData.light(useMaterial3: true);
+    final textTheme = GoogleFonts.interTextTheme(base.textTheme);
+
+    return base.copyWith(
+      scaffoldBackgroundColor: const Color(0xFFF0F4F8),
+      colorScheme: const ColorScheme.light(
+        primary: AppColors.accentTeal,
+        secondary: AppColors.accentGreen,
+        surface: Colors.white,
+        error: AppColors.accentRed,
+        onPrimary: Colors.black,
+        onSecondary: Colors.black,
+        onSurface: Color(0xFF0F1117),
+        onError: Colors.white,
+      ),
+      textTheme: textTheme.copyWith(
+        displayLarge: textTheme.displayLarge
+            ?.copyWith(color: const Color(0xFF0F1117), fontWeight: FontWeight.w800),
+        headlineLarge: textTheme.headlineLarge?.copyWith(
+            color: const Color(0xFF0F1117), fontWeight: FontWeight.w700, fontSize: 28),
+        headlineMedium: textTheme.headlineMedium?.copyWith(
+            color: const Color(0xFF0F1117), fontWeight: FontWeight.w600, fontSize: 22),
+        titleLarge: textTheme.titleLarge?.copyWith(
+            color: const Color(0xFF0F1117), fontWeight: FontWeight.w600, fontSize: 18),
+        titleMedium: textTheme.titleMedium?.copyWith(
+            color: const Color(0xFF0F1117), fontWeight: FontWeight.w500, fontSize: 16),
+        bodyLarge: textTheme.bodyLarge
+            ?.copyWith(color: const Color(0xFF0F1117), fontSize: 16),
+        bodyMedium: textTheme.bodyMedium
+            ?.copyWith(color: const Color(0xFF4B5563), fontSize: 14),
+        bodySmall: textTheme.bodySmall
+            ?.copyWith(color: const Color(0xFF6B7280), fontSize: 12),
+        labelLarge: textTheme.labelLarge?.copyWith(
+            color: const Color(0xFF0F1117),
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            letterSpacing: 0.5),
+      ),
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+      ),
+      dividerTheme: const DividerThemeData(
+          color: Color(0xFFE2E8F0), thickness: 1, space: 0),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.accentTeal,
+        unselectedItemColor: Color(0xFF9CA3AF),
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: IconThemeData(color: Color(0xFF0F1117)),
+        titleTextStyle: TextStyle(
+          color: Color(0xFF0F1117),
+          fontWeight: FontWeight.w600,
+          fontSize: 18,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.accentTeal, width: 2),
+        ),
+        hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accentTeal,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(
+              fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: 0.3),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.accentTeal,
+          side: const BorderSide(color: AppColors.accentTeal, width: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle:
+              const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFFF1F5F9),
+        selectedColor: AppColors.accentTeal.withValues(alpha: 0.15),
+        labelStyle:
+            const TextStyle(color: Color(0xFF4B5563), fontSize: 13),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: Colors.white,
+        contentTextStyle: const TextStyle(color: Color(0xFF0F1117)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        behavior: SnackBarBehavior.floating,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        elevation: 0,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 0,
+      ),
+    );
+  }
+
   static ThemeData get dark {
     final base = ThemeData.dark(useMaterial3: true);
     final textTheme = GoogleFonts.interTextTheme(base.textTheme);

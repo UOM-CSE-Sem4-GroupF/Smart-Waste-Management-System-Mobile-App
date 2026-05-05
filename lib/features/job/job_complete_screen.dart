@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/job_provider.dart';
 import '../../providers/cargo_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../models/job.dart';
 
@@ -41,23 +42,48 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
   Widget build(BuildContext context) {
     final jobAsync = ref.watch(jobProvider);
     final cargo = ref.watch(cargoProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
+    final bg = isDark ? AppColors.bgPrimary : const Color(0xFFF0F4F8);
+    final cardBg = isDark ? AppColors.bgCard : Colors.white;
+    final dividerColor = isDark ? AppColors.divider : const Color(0xFFE2E8F0);
 
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: bg,
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.bgGradient),
-        child: SafeArea(
-          child: jobAsync.when(
-            data: (job) => _buildContent(context, job, cargo),
-            loading: () => _buildContent(context, null, cargo),
-            error: (_, __) => _buildContent(context, null, cargo),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [const Color(0xFF0F1117), const Color(0xFF0D1520)]
+                : [const Color(0xFFF0F4F8), const Color(0xFFE8F5F2)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
+        ),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: jobAsync.when(
+                data: (job) => _buildContent(context, job, cargo, isDark, cardBg, dividerColor),
+                loading: () => _buildContent(context, null, cargo, isDark, cardBg, dividerColor),
+                error: (_, __) => _buildContent(context, null, cargo, isDark, cardBg, dividerColor),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, Job? job, CargoState cargo) {
+  Widget _buildContent(
+    BuildContext context,
+    Job? job,
+    CargoState cargo,
+    bool isDark,
+    Color cardBg,
+    Color dividerColor,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Column(
@@ -84,14 +110,14 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
           ).animate().fadeIn(delay: 600.ms),
           const SizedBox(height: 32),
           // Summary card
-          _buildSummaryCard(context, job, cargo),
+          _buildSummaryCard(context, job, cargo, cardBg, dividerColor, isDark),
           const SizedBox(height: 16),
           // Blockchain card
           if (job?.blockchainTxId != null)
-            _buildBlockchainCard(context, job!.blockchainTxId!),
+            _buildBlockchainCard(context, job!.blockchainTxId!, cardBg, dividerColor),
           const SizedBox(height: 32),
           // Actions
-          _buildActions(context),
+          _buildActions(context, isDark),
           const SizedBox(height: 16),
         ],
       ),
@@ -158,7 +184,13 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
   }
 
   Widget _buildSummaryCard(
-      BuildContext context, Job? job, CargoState cargo) {
+    BuildContext context,
+    Job? job,
+    CargoState cargo,
+    Color cardBg,
+    Color dividerColor,
+    bool isDark,
+  ) {
     final collected = job?.binsCollected ?? 0;
     final skipped = job?.binsSkipped ?? 0;
     final weight = cargo.currentKg;
@@ -167,11 +199,18 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: cardBg,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: AppColors.accentGreen.withValues(alpha: 0.3),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,16 +274,21 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
     ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1);
   }
 
-  Widget _buildBlockchainCard(BuildContext context, String txId) {
+  Widget _buildBlockchainCard(
+    BuildContext context,
+    String txId,
+    Color cardBg,
+    Color dividerColor,
+  ) {
     final short =
         '${txId.substring(0, 6)}...${txId.substring(txId.length - 4)}';
 
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: cardBg,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: dividerColor),
       ),
       child: Row(
         children: [
@@ -255,16 +299,18 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Blockchain TX',
-                  style: TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   short,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontFamily: 'monospace',
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
@@ -293,7 +339,7 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
     ).animate().fadeIn(delay: 1000.ms);
   }
 
-  Widget _buildActions(BuildContext context) {
+  Widget _buildActions(BuildContext context, bool isDark) {
     return Column(
       children: [
         SizedBox(
@@ -337,7 +383,9 @@ class _JobCompleteScreenState extends ConsumerState<JobCompleteScreen>
           label: const Text('View job history'),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textSecondary,
-            side: const BorderSide(color: AppColors.divider),
+            side: BorderSide(
+              color: isDark ? AppColors.divider : const Color(0xFFE2E8F0),
+            ),
           ),
         ).animate().fadeIn(delay: 1400.ms),
       ],

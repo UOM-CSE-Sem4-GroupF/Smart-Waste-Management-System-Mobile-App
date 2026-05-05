@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../models/bin_stop.dart';
 import '../../providers/job_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 
 
@@ -113,20 +114,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Left: avatar + driver ID
               Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.accentTeal, width: 2),
-                      image: const DecorationImage(
-                        image: NetworkImage('https://i.pravatar.cc/150?u=1024'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
+                  _buildProfileDropdown(context, driverId),
                   const SizedBox(width: 12),
                   Text(
                     'DRIVER #$driverId',
@@ -137,7 +128,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ],
               ),
-              const Icon(Icons.wifi, color: AppColors.accentBlue, size: 24),
+              // Right: theme toggle only — WiFi removed
+              Row(
+                children: [
+                  _buildThemeToggle(),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -642,6 +638,143 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileDropdown(BuildContext context, String driverId) {
+    return PopupMenuButton<String>(
+      offset: const Offset(0, 48),
+      color: AppColors.bgCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: AppColors.divider),
+      ),
+      elevation: 8,
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          enabled: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'John Driver',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
+              Text(
+                'DRIVER #$driverId',
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+              const Divider(color: AppColors.divider),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'profile',
+          child: Row(
+            children: [
+              Icon(Icons.person_outline_rounded,
+                  size: 18, color: AppColors.textSecondary),
+              SizedBox(width: 10),
+              Text('Profile Details',
+                  style: TextStyle(color: AppColors.textPrimary)),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'settings',
+          child: Row(
+            children: [
+              Icon(Icons.settings_outlined,
+                  size: 18, color: AppColors.textSecondary),
+              SizedBox(width: 10),
+              Text('Settings',
+                  style: TextStyle(color: AppColors.textPrimary)),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'logout',
+          child: Row(
+            children: [
+              Icon(Icons.logout_rounded,
+                  size: 18, color: AppColors.accentRed),
+              SizedBox(width: 10),
+              Text('Logout',
+                  style: TextStyle(
+                    color: AppColors.accentRed,
+                    fontWeight: FontWeight.w600,
+                  )),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (value) async {
+        if (value == 'logout') {
+          await ref.read(keycloakServiceProvider.notifier).logout();
+          if (!mounted) return;
+          // ignore: use_build_context_synchronously
+          context.go('/login');
+        } else if (value == 'profile') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile Details — coming soon')),
+          );
+        } else if (value == 'settings') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Settings — coming soon')),
+          );
+        }
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.accentTeal, width: 2),
+          image: const DecorationImage(
+            image: NetworkImage('https://i.pravatar.cc/150?u=1024'),
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeToggle() {
+    return Consumer(
+      builder: (context, ref, _) {
+        final themeMode = ref.watch(themeModeProvider);
+        final isDark = themeMode == ThemeMode.dark;
+        return GestureDetector(
+          onTap: () {
+            ref.read(themeModeProvider.notifier).state =
+                isDark ? ThemeMode.light : ThemeMode.dark;
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.bgCardLight : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? AppColors.divider : const Color(0xFFE2E8F0),
+              ),
+            ),
+            child: Icon(
+              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              color: isDark
+                  ? AppColors.accentYellow
+                  : const Color(0xFF6366F1),
+              size: 20,
+            ),
+          ),
+        );
+      },
     );
   }
 

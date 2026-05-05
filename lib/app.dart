@@ -10,6 +10,7 @@ import 'features/job/bin_collection_screen.dart';
 import 'features/job/job_complete_screen.dart';
 import 'features/history/history_screen.dart';
 import 'features/history/history_detail_screen.dart';
+import 'providers/theme_provider.dart';
 import 'theme/app_theme.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -131,9 +132,12 @@ class _WasteCollectAppState extends ConsumerState<WasteCollectApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
     return MaterialApp.router(
       title: 'WasteCollect Driver',
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
     );

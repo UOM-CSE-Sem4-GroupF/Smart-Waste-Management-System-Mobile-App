@@ -28,8 +28,7 @@ class JobAssignmentPreviewScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          const Icon(Icons.wifi, color: AppColors.accentBlue),
-          const SizedBox(width: 16),
+
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: CircleAvatar(
