@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
+import '../../core/env.dart';
 import '../../models/bin_stop.dart';
 import '../../models/job.dart';
 import '../../theme/app_theme.dart';
@@ -67,7 +68,7 @@ class HistoryDetailScreen extends ConsumerWidget {
               const SizedBox(height: 20),
 
               // Static route map
-              _buildRouteMap(job),
+              _buildRouteMap(context, job),
               const SizedBox(height: 20),
 
               // Stats card
@@ -184,7 +185,7 @@ class HistoryDetailScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: 100.ms);
   }
 
-  Widget _buildRouteMap(Job job) {
+  Widget _buildRouteMap(BuildContext context, Job job) {
     if (job.stops.isEmpty) return const SizedBox.shrink();
 
     final points = job.stops.map((s) => LatLng(s.lat, s.lng)).toList();
@@ -207,9 +208,10 @@ class HistoryDetailScreen extends ConsumerWidget {
           ),
           children: [
             TileLayer(
-              urlTemplate:
-                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              key: ValueKey(AppEnv.mapTileUrl(context)),
+              urlTemplate: AppEnv.mapTileUrl(context),
               userAgentPackageName: 'com.groupf.waste_collect_driver',
+              retinaMode: false,
             ),
             if (job.waypoints.length >= 2)
               PolylineLayer(

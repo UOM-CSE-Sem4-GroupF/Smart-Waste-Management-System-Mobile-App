@@ -13,12 +13,22 @@ final authStateProvider = Provider<AuthState>(
   (ref) => ref.watch(keycloakServiceProvider),
 );
 
-/// Current logged-in driver.
+/// Current logged-in driver. (Mocked for bypass)
 final currentDriverProvider = Provider<Driver?>(
-  (ref) => ref.watch(authStateProvider).driver,
+  (ref) => const Driver(
+    id: '1024',
+    keycloakId: 'mock-id',
+    name: 'John Driver',
+    email: 'john@example.com',
+    vehicleId: 'LORRY-03',
+    vehicleName: 'LORRY-03',
+    vehicleCapacityKg: 2000,
+    zoneId: '3',
+    zoneName: 'Zone 3',
+  ),
 );
 
-/// Whether the user is currently logged in.
+/// Whether the user is currently logged in. (Hardcoded to true for bypass)
 final isLoggedInProvider = Provider<bool>(
-  (ref) => ref.watch(authStateProvider).isLoggedIn,
+  (ref) => true,
 );

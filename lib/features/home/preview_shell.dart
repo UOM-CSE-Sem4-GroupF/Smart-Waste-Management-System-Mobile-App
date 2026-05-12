@@ -3,6 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import '../../providers/theme_provider.dart';
+import '../../core/env.dart';
+import '../../models/bin_stop.dart';
 import '../../theme/app_theme.dart';
 import '../job/job_complete_preview_screen.dart';
 import '../login/login_preview_screen.dart';
@@ -229,10 +231,12 @@ class ProfileDropdown extends ConsumerWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.accentTeal, width: 2),
-          image: const DecorationImage(
-            image: NetworkImage('https://i.pravatar.cc/150?u=1024'),
-            fit: BoxFit.cover,
-          ),
+          color: AppColors.accentTeal.withValues(alpha: 0.1),
+        ),
+        child: const Icon(
+          Icons.person_rounded,
+          color: AppColors.accentTeal,
+          size: 24,
         ),
       ),
     );
@@ -269,8 +273,10 @@ class MapPreviewBody extends ConsumerWidget {
           ),
           children: [
             TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              key: ValueKey(AppEnv.mapTileUrl(context)),
+              urlTemplate: AppEnv.mapTileUrl(context),
               userAgentPackageName: 'com.groupf.waste_collect_driver',
+              retinaMode: false,
             ),
             MarkerLayer(markers: demoMarkers),
           ],

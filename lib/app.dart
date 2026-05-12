@@ -7,7 +7,6 @@ import 'features/home/home_screen.dart';
 import 'features/job/job_detail_screen.dart';
 import 'features/job/job_map_screen.dart';
 import 'features/job/bin_collection_screen.dart';
-import 'features/job/job_complete_screen.dart';
 import 'features/history/history_screen.dart';
 import 'features/history/history_detail_screen.dart';
 import 'providers/theme_provider.dart';
@@ -46,7 +45,14 @@ GoRouter buildRouter(WidgetRef ref) {
       GoRoute(
         path: '/job/active/map',
         name: 'jobMap',
-        builder: (_, __) => const JobMapScreen(),
+        builder: (_, state) {
+          final latStr = state.uri.queryParameters['lat'];
+          final lngStr = state.uri.queryParameters['lng'];
+          return JobMapScreen(
+            focusLat: latStr != null ? double.tryParse(latStr) : null,
+            focusLng: lngStr != null ? double.tryParse(lngStr) : null,
+          );
+        },
       ),
       GoRoute(
         path: '/job/active/bin/:clusterId',
@@ -54,11 +60,6 @@ GoRouter buildRouter(WidgetRef ref) {
         builder: (_, state) => BinCollectionScreen(
           clusterId: state.pathParameters['clusterId']!,
         ),
-      ),
-      GoRoute(
-        path: '/job/complete',
-        name: 'jobComplete',
-        builder: (_, __) => const JobCompleteScreen(),
       ),
       GoRoute(
         path: '/job/:jobId',

@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/env.dart';
 import '../../models/bin_stop.dart';
+import '../../models/job.dart';
 import '../../providers/job_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
@@ -36,13 +38,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final driver = ref.watch(currentDriverProvider);
     final jobAsync = ref.watch(jobProvider);
     final statsAsync = ref.watch(driverStatsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
 
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: RefreshIndicator(
           color: AppColors.accentTeal,
-          backgroundColor: AppColors.bgCard,
+          backgroundColor: isDark ? AppColors.bgCardLight : Colors.white,
           onRefresh: _onRefresh,
           child: CustomScrollView(
             slivers: [
@@ -55,37 +59,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   driver != null ? driver.zoneName : 'Zone 3',
                 ),
               ),
-              // Content
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                sliver: SliverToBoxAdapter(
-                  child: jobAsync.when(
-                    data: (job) => job != null
-                        ? _buildActiveJobCard(context, job)
-                        : _buildNoJobCard(context, statsAsync),
-                    loading: () => _buildLoadingCard(),
-                    error: (_, __) => _buildNoJobCard(context, statsAsync),
-                  ),
-                ),
-              ),
-              // Map Preview
+              // Map Preview (Moved Up)
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 sliver: SliverToBoxAdapter(
                   child: _buildMapPreviewCard(context),
                 ),
               ),
-              // Bottom actions
+              // Current Jobs Section
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CURRENT JOBS',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                ),
+              ),
+              // Content: Job List
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: jobAsync.when(
+                  data: (job) => _buildCurrentJobsList(context, job),
+                  loading: () => SliverToBoxAdapter(child: _buildLoadingCard()),
+                  error: (_, __) => _buildCurrentJobsList(context, null),
+                ),
+              ),
+              // Bottom actions
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      const SizedBox(height: 8),
                       _buildHistoryButton(context),
                       const SizedBox(height: 24),
-                      _buildLogoutButton(context),
-                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -120,7 +138,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   _buildProfileDropdown(context, driverId),
                   const SizedBox(width: 12),
                   Text(
-                    'DRIVER #$driverId',
+                    '#$driverId',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w900,
                           letterSpacing: 1.2,
@@ -128,9 +146,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ],
               ),
-              // Right: theme toggle only — WiFi removed
+              // Right: theme toggle + notification icon
               Row(
                 children: [
+                  _buildNotificationIcon(),
+                  const SizedBox(width: 8),
                   _buildThemeToggle(),
                 ],
               ),
@@ -207,16 +227,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                "You're available",
+                'View available jobs',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Waiting for assignment...',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
                     ),
               ),
             ],
@@ -359,10 +372,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  key: ValueKey(AppEnv.mapTileUrl(context)),
+                  urlTemplate: AppEnv.mapTileUrl(context),
                   userAgentPackageName:
                       'com.groupf.waste_collect_driver',
+                  retinaMode: false,
                 ),
                 MarkerLayer(markers: markers),
               ],
@@ -375,7 +389,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.bgPrimary.withValues(alpha: 0.82),
+                  color: Theme.of(context)
+                      .scaffoldBackgroundColor
+                      .withValues(alpha: 0.82),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                       color: AppColors.divider, width: 0.5),
@@ -412,7 +428,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      AppColors.bgPrimary.withValues(alpha: 0.92),
+                      Theme.of(context)
+                          .scaffoldBackgroundColor
+                          .withValues(alpha: 0.92),
                     ],
                   ),
                 ),
@@ -687,18 +705,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         const PopupMenuItem<String>(
-          value: 'settings',
-          child: Row(
-            children: [
-              Icon(Icons.settings_outlined,
-                  size: 18, color: AppColors.textSecondary),
-              SizedBox(width: 10),
-              Text('Settings',
-                  style: TextStyle(color: AppColors.textPrimary)),
-            ],
-          ),
-        ),
-        const PopupMenuItem<String>(
           value: 'logout',
           child: Row(
             children: [
@@ -724,10 +730,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Profile Details — coming soon')),
           );
-        } else if (value == 'settings') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Settings — coming soon')),
-          );
         }
       },
       child: Container(
@@ -736,10 +738,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.accentTeal, width: 2),
-          image: const DecorationImage(
-            image: NetworkImage('https://i.pravatar.cc/150?u=1024'),
-            fit: BoxFit.cover,
+          color: AppColors.accentTeal.withValues(alpha: 0.1),
+        ),
+        child: const Icon(
+          Icons.person_rounded,
+          color: AppColors.accentTeal,
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationIcon() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notifications — coming soon')),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.bgCardLight : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isDark ? AppColors.divider : const Color(0xFFE2E8F0),
           ),
+        ),
+        child: Icon(
+          Icons.notifications_outlined,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+          size: 20,
         ),
       ),
     );
@@ -759,7 +789,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             duration: const Duration(milliseconds: 300),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.bgCardLight : const Color(0xFFF1F5F9),
+              color: isDark ? AppColors.bgCardLight : Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: isDark ? AppColors.divider : const Color(0xFFE2E8F0),
@@ -778,19 +808,225 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
-    return TextButton.icon(
-      onPressed: () async {
-        await ref.read(keycloakServiceProvider.notifier).logout();
-        if (!mounted) return;
-        // ignore: use_build_context_synchronously
-        context.go('/login');
-      },
-      icon: const Icon(Icons.logout_rounded,
-          size: 18, color: AppColors.textMuted),
-      label: const Text(
-        'Sign out',
-        style: TextStyle(color: AppColors.textMuted),
+  // ── Current Jobs List ──────────────────────────────────────────────────────
+
+  Widget _buildCurrentJobsList(BuildContext context, Job? job) {
+    final List<BinStop> stops = job?.stops ?? _getDummyStops();
+
+    if (stops.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.bgCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: const Center(
+            child: Text(
+              'No jobs available',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _JobListItem(
+              stop: stops[index],
+              isDummy: job == null,
+            ),
+          );
+        },
+        childCount: stops.length,
+      ),
+    );
+  }
+
+  List<BinStop> _getDummyStops() {
+    return [
+      BinStop(
+        clusterId: 'dummy-1',
+        clusterName: 'WTC - Colombo 01',
+        lat: 6.9328,
+        lng: 79.8438,
+        stopIndex: 0,
+        status: StopStatus.pending,
+        bins: [
+          Bin(id: 'bin-d1a', type: BinType.general, fillLevel: 0.85, estimatedWeightKg: 12.0),
+          Bin(id: 'bin-d1b', type: BinType.plastic, fillLevel: 0.60, estimatedWeightKg: 5.0),
+          Bin(id: 'bin-d1c', type: BinType.paper,   fillLevel: 0.70, estimatedWeightKg: 7.0),
+        ],
+      ),
+      BinStop(
+        clusterId: 'dummy-2',
+        clusterName: 'Gangaramaya Temple',
+        lat: 6.9168,
+        lng: 79.8580,
+        stopIndex: 1,
+        status: StopStatus.current,
+        bins: [
+          Bin(id: 'bin-d2a', type: BinType.food,    fillLevel: 0.90, estimatedWeightKg: 18.0),
+          Bin(id: 'bin-d2b', type: BinType.general, fillLevel: 0.50, estimatedWeightKg: 8.0),
+        ],
+      ),
+      BinStop(
+        clusterId: 'dummy-3',
+        clusterName: 'Galle Face Green',
+        lat: 6.9272,
+        lng: 79.8433,
+        stopIndex: 2,
+        status: StopStatus.completed,
+        bins: [
+          Bin(id: 'bin-d3a', type: BinType.glass,   fillLevel: 0.75, estimatedWeightKg: 20.0),
+          Bin(id: 'bin-d3b', type: BinType.metal,   fillLevel: 0.40, estimatedWeightKg: 15.0),
+          Bin(id: 'bin-d3c', type: BinType.plastic, fillLevel: 0.55, estimatedWeightKg: 6.0),
+          Bin(id: 'bin-d3d', type: BinType.paper,   fillLevel: 0.65, estimatedWeightKg: 9.0),
+        ],
+      ),
+    ];
+  }
+}
+
+class _JobListItem extends ConsumerStatefulWidget {
+  final BinStop stop;
+  final bool isDummy;
+
+  const _JobListItem({required this.stop, this.isDummy = false});
+
+  @override
+  ConsumerState<_JobListItem> createState() => _JobListItemState();
+}
+
+class _JobListItemState extends ConsumerState<_JobListItem> {
+  late StopStatus _localStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _localStatus = widget.stop.status;
+  }
+
+  StopStatus get _displayStatus =>
+      widget.isDummy ? _localStatus : widget.stop.status;
+
+  void _onStatusTap() {
+    context.push(
+      Uri(
+        path: '/job/active/map',
+        queryParameters: {
+          'lat': widget.stop.lat.toString(),
+          'lng': widget.stop.lng.toString(),
+        },
+      ).toString(),
+    );
+
+    final next = _getNextStatus(_displayStatus);
+    if (widget.isDummy) {
+      setState(() => _localStatus = next);
+    } else {
+      ref.read(jobProvider.notifier).updateStopStatus(widget.stop.clusterId, next);
+    }
+  }
+
+  StopStatus _getNextStatus(StopStatus status) {
+    switch (status) {
+      case StopStatus.pending:
+        return StopStatus.current;
+      case StopStatus.current:
+        return StopStatus.completed;
+      case StopStatus.completed:
+        return StopStatus.pending;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status = _displayStatus;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bgCard : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.divider : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.stop.clusterName,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.titleSmall?.color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+                Text(
+                  'Stop #${widget.stop.stopIndex + 1}',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildStatusButton(status),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusButton(StopStatus status) {
+    String label;
+    Color color;
+
+    switch (status) {
+      case StopStatus.pending:
+        label = 'START';
+        color = AppColors.accentYellow;
+        break;
+      case StopStatus.current:
+        label = 'IN PROGRESS';
+        color = AppColors.accentGreen;
+        break;
+      case StopStatus.completed:
+        label = 'COMPLETED';
+        color = AppColors.accentRed;
+        break;
+    }
+
+    return GestureDetector(
+      onTap: _onStatusTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
       ),
     );
   }

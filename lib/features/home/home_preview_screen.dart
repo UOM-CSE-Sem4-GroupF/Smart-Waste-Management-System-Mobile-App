@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import '../../core/env.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 import '../job/job_assignment_preview_screen.dart';
@@ -213,7 +214,7 @@ class HomePreviewBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  "You're available",
+                  'View available jobs',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: textPrimary,
@@ -222,7 +223,7 @@ class HomePreviewBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Waiting for assignment...',
+                  'Tap to review and accept new assignments',
                   style: TextStyle(
                     color: textSecondary,
                     fontSize: 15,
@@ -278,9 +279,10 @@ class HomePreviewBody extends ConsumerWidget {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        key: ValueKey(AppEnv.mapTileUrl(context)),
+                        urlTemplate: AppEnv.mapTileUrl(context),
                         userAgentPackageName: 'com.groupf.waste_collect_driver',
+                        retinaMode: false,
                       ),
                       MarkerLayer(markers: binMarkers),
                     ],
@@ -457,9 +459,10 @@ class HomePreviewBody extends ConsumerWidget {
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  key: ValueKey(AppEnv.mapTileUrl(context)),
+                  urlTemplate: AppEnv.mapTileUrl(context),
                   userAgentPackageName: 'com.groupf.waste_collect_driver',
+                  retinaMode: false,
                 ),
                 MarkerLayer(markers: demoMarkers),
               ],

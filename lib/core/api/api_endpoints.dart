@@ -9,6 +9,8 @@ class ApiEndpoints {
   static String rejectJob(String id) =>
       '/api/v1/collection-jobs/$id/reject';
   static String jobProgress(String id) => '/api/v1/jobs/$id/progress';
+  static String updateStopStatus(String jobId, String clusterId) =>
+      '/api/v1/collection-jobs/$jobId/stops/$clusterId/status';
 
   // Bin actions
   static String collectBin(String jobId, String binId) =>

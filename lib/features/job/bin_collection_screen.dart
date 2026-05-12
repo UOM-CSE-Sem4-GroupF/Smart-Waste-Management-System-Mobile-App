@@ -146,7 +146,8 @@ class _BinCollectionScreenState extends ConsumerState<BinCollectionScreen> {
 
     final updatedJob = ref.read(jobProvider).valueOrNull;
     if (updatedJob?.isComplete == true) {
-      context.go('/job/complete');
+      // All stops done — go back home (job complete page removed)
+      context.go('/home');
     } else {
       context.pop();
     }

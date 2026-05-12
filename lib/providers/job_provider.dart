@@ -162,6 +162,41 @@ class JobNotifier extends AsyncNotifier<Job?> {
     });
   }
 
+  void updateStopStatus(String clusterId, StopStatus status) {
+    // Optimistic local update first (instant UI feedback)
+    state = state.whenData((job) {
+      if (job == null) return null;
+      final updated = job.stops.map((s) {
+        if (s.clusterId == clusterId) {
+          s.status = status;
+        }
+        return s;
+      }).toList();
+      return job.copyWith(stops: updated);
+    });
+
+    // Persist to backend if we have an active real job
+    final job = state.valueOrNull;
+    if (job != null) {
+      _pushStopStatusToApi(job.id, clusterId, status);
+    }
+  }
+
+  Future<void> _pushStopStatusToApi(
+      String jobId, String clusterId, StopStatus status) async {
+    try {
+      final dio = ref.read(dioProvider);
+      final statusStr = status.name.toUpperCase(); // PENDING / CURRENT / COMPLETED
+      await dio.patch(
+        ApiEndpoints.updateStopStatus(jobId, clusterId),
+        data: {'status': statusStr},
+      );
+    } catch (_) {
+      // Silent fail — local state already updated optimistically.
+      // The backend will be in sync on next job refresh.
+    }
+  }
+
   void refreshJob() => ref.invalidateSelf();
 }
 
