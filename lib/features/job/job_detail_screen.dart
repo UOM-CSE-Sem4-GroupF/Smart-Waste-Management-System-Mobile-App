@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import '../../core/env.dart';
 import '../../models/job.dart';
 import '../../models/bin_stop.dart';
 import '../../providers/job_provider.dart';
@@ -192,7 +193,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                 _buildJobStats(job),
                 const SizedBox(height: 16),
                 // Map preview
-                _buildMapPreview(job),
+                _buildMapPreview(context, job),
                 const SizedBox(height: 20),
                 // Timer
                 _buildTimer(),
@@ -345,7 +346,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     );
   }
 
-  Widget _buildMapPreview(Job job) {
+  Widget _buildMapPreview(BuildContext context, Job job) {
     if (job.stops.isEmpty) return const SizedBox.shrink();
     final center = LatLng(job.stops.first.lat, job.stops.first.lng);
 
@@ -363,9 +364,10 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
           ),
           children: [
             TileLayer(
-              urlTemplate:
-                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              key: ValueKey(AppEnv.mapTileUrl(context)),
+              urlTemplate: AppEnv.mapTileUrl(context),
               userAgentPackageName: 'com.groupf.waste_collect_driver',
+              retinaMode: false,
             ),
             MarkerLayer(
               markers: job.stops

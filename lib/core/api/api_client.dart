@@ -5,7 +5,7 @@ import '../auth/auth_provider.dart';
 import '../env.dart';
 
 final dioProvider = Provider<Dio>((ref) {
-  final keycloak = ref.read(keycloakServiceProvider);
+  final keycloak = ref.read(keycloakServiceProvider.notifier);
   final dio = Dio(
     BaseOptions(
       baseUrl: AppEnv.apiUrl,

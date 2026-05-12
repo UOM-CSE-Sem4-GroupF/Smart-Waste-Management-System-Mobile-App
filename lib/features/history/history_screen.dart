@@ -33,8 +33,11 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(_historyProvider);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+
     return Scaffold(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: bgColor,
       appBar: AppBar(
         title: const Text('Job History'),
         leading: IconButton(
@@ -57,14 +60,15 @@ class HistoryScreen extends ConsumerWidget {
 
   Widget _buildList(BuildContext context, List<Job> jobs) {
     if (jobs.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('📋', style: TextStyle(fontSize: 48)),
-            SizedBox(height: 16),
+            Icon(Icons.assignment_turned_in_outlined,
+                size: 64, color: AppColors.accentTeal.withValues(alpha: 0.5)),
+            const SizedBox(height: 16),
             Text('No completed jobs yet',
-                style: TextStyle(color: AppColors.textSecondary)),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),
           ],
         ),
       );
@@ -81,6 +85,9 @@ class HistoryScreen extends ConsumerWidget {
     final monthJobs = jobs.length;
     final monthBins = jobs.fold<int>(0, (a, j) => a + j.binsCollected);
     final monthWeight = jobs.fold<double>(0, (a, j) => a + j.actualWeightKg);
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -99,6 +106,7 @@ class HistoryScreen extends ConsumerWidget {
                   selectedColor:
                       AppColors.accentTeal.withValues(alpha: 0.15),
                   checkmarkColor: AppColors.accentTeal,
+                  backgroundColor: isDark ? AppColors.bgCardLight : Colors.white,
                 ),
               );
             }).toList(),
@@ -117,8 +125,8 @@ class HistoryScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   entry.key,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
@@ -189,15 +197,19 @@ class _JobHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () => context.push('/history/${job.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
+          color: isDark ? AppColors.bgCard : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(
+            color: isDark ? AppColors.divider : const Color(0xFFE2E8F0),
+          ),
         ),
         child: Row(
           children: [
@@ -217,8 +229,8 @@ class _JobHistoryCard extends StatelessWidget {
                 children: [
                   Text(
                     job.zoneName,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.titleSmall?.color,
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -227,16 +239,16 @@ class _JobHistoryCard extends StatelessWidget {
                   Row(
                     children: [
                       _SmallStat(
-                          icon: Icons.delete_rounded,
+                          icon: Icons.restore_from_trash_rounded,
                           text: '${job.binsCollected} bins'),
                       const SizedBox(width: 10),
                       if (job.duration != null)
                         _SmallStat(
-                            icon: Icons.access_time_rounded,
+                            icon: Icons.timer_outlined,
                             text: '${job.duration!.inMinutes} min'),
                       const SizedBox(width: 10),
                       _SmallStat(
-                          icon: Icons.scale_rounded,
+                          icon: Icons.fitness_center_rounded,
                           text: '${job.actualWeightKg.toInt()} kg'),
                     ],
                   ),
@@ -248,12 +260,12 @@ class _JobHistoryCard extends StatelessWidget {
               children: [
                 Text(
                   DateFormat('HH:mm').format(job.assignedAt),
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 12),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 12),
                 ),
                 const SizedBox(height: 6),
-                const Icon(Icons.chevron_right_rounded,
-                    color: AppColors.textMuted),
+                Icon(Icons.chevron_right_rounded,
+                    color: Theme.of(context).textTheme.bodySmall?.color),
               ],
             ),
           ],
