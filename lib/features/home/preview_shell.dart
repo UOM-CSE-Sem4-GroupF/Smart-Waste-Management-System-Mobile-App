@@ -202,19 +202,12 @@ class ProfileDropdown extends ConsumerWidget {
           ),
         ),
       ],
-      onSelected: (value) {
+      onSelected: (value) async {
         if (value == 'logout') {
-          Navigator.of(context).pushAndRemoveUntil(
-            PageRouteBuilder(
-              pageBuilder: (_, animation, __) => const LoginPreviewScreen(),
-              transitionsBuilder: (_, animation, __, child) => FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-              transitionDuration: const Duration(milliseconds: 350),
-            ),
-            (route) => false,
-          );
+          await ref.read(keycloakServiceProvider.notifier).logout();
+          ref.read(isLoggedInProvider.notifier).state = false;
+          // ignore: use_build_context_synchronously
+          context.go('/login');
         } else if (value == 'profile') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Profile Details — coming soon')),

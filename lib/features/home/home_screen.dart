@@ -355,8 +355,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? job.zoneName.toUpperCase()
         : 'NO ACTIVE JOB — STANDBY';
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: isDark ? null : Border.all(color: Colors.black, width: 1),
+      ),
       child: SizedBox(
         height: 300,
         child: Stack(
@@ -723,6 +729,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       onSelected: (value) async {
         if (value == 'logout') {
           await ref.read(keycloakServiceProvider.notifier).logout();
+          ref.read(isLoggedInProvider.notifier).state = false;
           if (!mounted) return;
           // ignore: use_build_context_synchronously
           context.go('/login');

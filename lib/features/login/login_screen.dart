@@ -38,20 +38,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _onLogin() async {
-    final keycloak = ref.read(keycloakServiceProvider.notifier);
-    await keycloak.login();
+    // Completely bypass Keycloak login for now
+    // final keycloak = ref.read(keycloakServiceProvider.notifier);
+    // await keycloak.login();
+    
     if (!mounted) return;
-    final isLoggedIn = ref.read(isLoggedInProvider);
-    if (isLoggedIn) {
-      context.go('/home');
-    } else {
-      final err = ref.read(authStateProvider).error;
-      if (err != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err), backgroundColor: AppColors.accentRed),
-        );
-      }
-    }
+    ref.read(isLoggedInProvider.notifier).state = true;
+    context.go('/home');
   }
 
   @override

@@ -28,7 +28,7 @@ final currentDriverProvider = Provider<Driver?>(
   ),
 );
 
-/// Whether the user is currently logged in. (Hardcoded to true for bypass)
-final isLoggedInProvider = Provider<bool>(
+/// Whether the user is currently logged in. (Using StateProvider for bypass toggle)
+final isLoggedInProvider = StateProvider<bool>(
   (ref) => true,
 );
